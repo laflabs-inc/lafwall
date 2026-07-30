@@ -4,7 +4,7 @@ GO ?= go
 GOFMT ?= gofmt
 GITLEAKS_VERSION := v8.30.1
 GOVULNCHECK_VERSION := v1.6.0
-GITLEAKS := $(GO) run github.com/gitleaks/gitleaks/v8@$(GITLEAKS_VERSION)
+GITLEAKS := $(GO) run github.com/zricethezav/gitleaks/v8@$(GITLEAKS_VERSION)
 GOVULNCHECK := $(GO) run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
 
 .PHONY: all audit build check ci format format-check lint run \
