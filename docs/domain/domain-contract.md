@@ -1,6 +1,8 @@
 # Domain Contract
 
-Status: **Draft**
+Status: **Accepted baseline**
+
+Accepted: 2026-07-30
 
 This document defines domain meaning, not a stable HTTP or database schema.
 Public API and migration approval are separate gates.
@@ -46,8 +48,9 @@ An isolated deployment context within a project.
 
 - Has an immutable ID and project ID.
 - Development, Staging, and Production are created as initial defaults.
-- The policy for additional environments and renaming remains an approval
-  decision.
+- Development, Staging, and Production cannot be renamed or removed during
+  the MVP.
+- Custom environments are outside the MVP.
 
 ### Secret
 
@@ -105,10 +108,11 @@ An append-only record of a security-relevant attempt or completed action.
 8. Parent archival or deletion restricts descendant access according to an
    approved lifecycle policy.
 
-## Preliminary permission vocabulary
+## Permission vocabulary boundary
 
-The exact roles remain an approval decision. Policy should be expressed using
-fine-grained actions such as:
+The MVP uses fixed roles over fine-grained permissions. Exact role names,
+scope, and inheritance require a separately accepted RBAC RFC before
+implementation. Policy should be expressed using actions such as:
 
 - `project:create`, `project:read`, `project:update`, `project:archive`
 - `environment:create`, `environment:read`, `environment:update`
@@ -132,4 +136,3 @@ metadata access.
 - Historical versions and audit events are immutable to the runtime role.
 - Current-version references cannot point across secrets.
 - Role-assignment scope cannot cross the principal's tenant boundary.
-

@@ -12,7 +12,7 @@
 
 ## Phase 0 — Security and architecture baseline
 
-Status: **In progress**
+Status: **Complete**
 
 ### Slice 0.1 — Product and security boundary
 
@@ -21,8 +21,9 @@ Status: **In progress**
 - [x] Draft non-negotiable security invariants.
 - [x] Draft the initial domain contract.
 - [x] Draft the API-first modular-monolith ADR.
-- [ ] Resolve and approve the decisions in `docs/decisions-required.md`.
-- [ ] Mark the accepted ADR and domain contract as approved baselines.
+- [x] Resolve and approve the decisions in `docs/decisions-required.md`.
+- [x] Mark the accepted ADR, RFC, security documents, and domain contract as
+  approved baselines.
 
 Exit evidence:
 
@@ -33,7 +34,7 @@ Exit evidence:
 
 ## Phase 1 — Executable security foundation
 
-Status: **Blocked by Phase 0**
+Status: **Not started**
 
 ### Slice 1.1 — Repository and quality skeleton
 
@@ -179,4 +180,3 @@ Status: **Blocked by Phase 5**
   runbooks have been exercised.
 - The public API, CLI behavior, and operator documentation are versioned.
 - No excluded roadmap feature is required for safe operation of the MVP.
-

@@ -1,103 +1,97 @@
 # Decisions Required Before Implementation
 
-Status: **Open**
+Status: **Resolved for Phase 0**
 
-The following choices affect architecture, storage, public API, or security
-policy. They must be explicitly approved before dependent production code is
-written.
+Decision date: 2026-07-30
+
+This is the index of the Phase 0 decisions approved by LafLabs. Accepted ADRs
+and RFCs are the normative records. A decision explicitly deferred here
+remains an approval gate before dependent work begins.
 
 ## D1 — Platform architecture
 
-Recommendation: accept
+Decision: **Accepted** in
 `docs/adr/0001-api-first-modular-monolith.md`.
 
-Why: it provides one authoritative security boundary without adopting
-microservice failure modes before they are justified.
+The platform uses one authoritative API-first security boundary without
+adopting microservice failure modes before operational evidence justifies
+them.
 
 ## D2 — Backend implementation stack
 
-Recommendation: **Go modular monolith** with PostgreSQL.
+Decision: **Accepted** in `docs/adr/0002-go-postgresql-backend.md`.
 
-Reasons:
-
-- predictable resource use and straightforward static deployment;
-- mature standard HTTP, cryptography, database, and observability ecosystem;
-- explicit error handling is valuable on security-sensitive paths;
-- easier operational profile than a multi-runtime backend.
-
-Alternatives:
-
-- Rust provides stronger memory-safety and type-level guarantees but increases
-  implementation and hiring complexity for the MVP.
-- TypeScript maximizes LafLabs ecosystem familiarity but has a larger runtime
-  and dependency surface for this security-critical backend.
-
-The CLI language should be chosen after the public API contract is stable. It
-does not need to share the backend runtime.
+The backend is a Go modular monolith and PostgreSQL is its system of record.
+This does not approve an initial migration or select the CLI language.
 
 ## D3 — Initial production KEK provider
 
-Recommendation: define a vendor-neutral `KekProvider` contract and implement
-exactly one production provider for the first deployment. A local provider is
-development-only and production startup must reject it.
+Decision: **Partially accepted and explicitly deferred**.
 
-Approval needed:
+- A vendor-neutral `KekProvider` boundary is approved.
+- The first release will implement exactly one production provider selected
+  for its actual deployment environment.
+- Deterministic fake providers are test-only. Any local provider is
+  development-only and production startup must reject it.
 
-- the first deployment environment; and
-- its managed KMS provider.
-
-Do not build multiple cloud adapters during the MVP without an actual
-deployment requirement.
+The first deployment environment and managed KMS provider remain unselected.
+Production encryption-provider implementation and production deployment are
+blocked until that selection receives explicit approval. Multiple cloud
+adapters remain out of scope without a demonstrated deployment requirement.
 
 ## D4 — Human identity
 
-Recommendation: accept OIDC as the only human authentication boundary, with
-Laf ID as the intended issuer when it satisfies the required contracts.
+Decision: **Accepted** as part of
+`docs/rfc/0001-mvp-policy-boundaries.md`.
 
-The backend must key users by immutable `(issuer, subject)`. Email is mutable
-profile data.
-
-Approval needed: whether early local and staging deployments may use a
-separate standards-compliant OIDC issuer until Laf ID is production-ready.
+OIDC is the only human authentication boundary. Laf ID is the intended
+production issuer. A temporary standards-compliant issuer may be configured
+only for local or staging use until Laf ID is ready; it must be explicit and
+impossible to enable in production accidentally. Users are keyed by immutable
+`(issuer, subject)`, never email.
 
 ## D5 — Tenant and organization model
 
-Recommendation: make `Tenant` an internal mandatory isolation boundary from
-the first migration. Initially, each human can receive a personal tenant.
-Organization management can remain outside the MVP UI.
+Decision: **Accepted** as part of
+`docs/rfc/0001-mvp-policy-boundaries.md`.
 
-Why: adding tenant ownership later would require a high-risk migration across
-every secret, role, token, and audit record.
-
-Approval needed: whether the MVP must expose collaborative organization
-management or only the internal boundary and project-scoped membership.
+`Tenant` is a mandatory internal isolation boundary from the first storage
+baseline. A human may initially receive a personal tenant. Collaborative
+organization management and its UI are outside the MVP; project-scoped
+membership may be introduced only within the approved RBAC contract.
 
 ## D6 — Environment policy
 
-Recommendation: create Development, Staging, and Production by default, model
-Environment as a normal entity, and defer arbitrary additional environments
-until product demand is demonstrated.
+Decision: **Accepted** as part of
+`docs/rfc/0001-mvp-policy-boundaries.md`.
 
-Approval needed:
-
-- whether default environments may be renamed; and
-- whether users may add custom environments in the MVP.
+Development, Staging, and Production are fixed MVP environments. They are
+normal domain entities but cannot be renamed, removed, or supplemented with
+custom environments during the MVP.
 
 ## D7 — RBAC role matrix
 
-Recommendation: define a small fixed role set over fine-grained internal
-permissions. Keep `secret:read_value` separate from administration and
-metadata access.
+Decision: **Product boundary accepted; exact matrix deferred**.
 
-The exact roles and inheritance rules require a dedicated proposed RFC before
-implementation.
+The MVP uses a small fixed role set over fine-grained internal permissions and
+does not support custom roles. `secret:read_value` is separate from
+administration and metadata access. The exact role names, permissions, scope,
+and inheritance rules require a dedicated proposed RFC and explicit approval
+before Slice 2.3 begins.
 
 ## D8 — Secret access API
 
-Recommendation: separate metadata retrieval from explicit plaintext access.
-List and metadata endpoints must never decrypt values.
+Decision: **Semantic boundary accepted; public contract deferred**.
 
-The final versioned resource paths, request bodies, concurrency mechanism,
-idempotency behavior, and error format require a proposed OpenAPI contract and
-explicit approval before publication.
+Metadata retrieval and explicit plaintext reveal are separate operations.
+List and metadata operations never decrypt values. Final versioned resource
+paths, request bodies, concurrency and idempotency behavior, and error format
+require a proposed OpenAPI contract and explicit approval before publication.
 
+## Remaining approval gates
+
+- Initial database migration and storage baseline
+- Initial production deployment environment and KMS provider
+- Exact RBAC matrix
+- Initial versioned OpenAPI contract
+- CLI implementation language, when CLI work begins

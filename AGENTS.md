@@ -87,4 +87,3 @@ Every implementation slice must include:
 - Prefer explicit code over speculative abstraction.
 - Keep changes small, reviewable, and limited to the active roadmap slice.
 - Do not add roadmap-excluded features early.
-

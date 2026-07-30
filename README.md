@@ -10,11 +10,13 @@ version history, and auditable access are core product behavior.
 
 ## Status
 
-The project is in its security and architecture baseline phase. No production
-implementation or stable public API exists yet.
+The initial security, domain, and architecture baseline is accepted. No
+production implementation, database baseline, or stable public API exists
+yet.
 
-The current documents are proposals until their approval status says
-otherwise.
+Each decision document remains authoritative only for the scope stated in
+that document. Deferred decisions must be approved before dependent work
+begins.
 
 ## Product values
 
@@ -69,6 +71,7 @@ scope.
 - [Security invariants](docs/security/security-invariants.md)
 - [Threat model](docs/security/threat-model.md)
 - [Domain contract](docs/domain/domain-contract.md)
-- [Proposed platform architecture](docs/adr/0001-api-first-modular-monolith.md)
-- [Decisions required before implementation](docs/decisions-required.md)
-
+- [Platform architecture](docs/adr/0001-api-first-modular-monolith.md)
+- [Backend stack](docs/adr/0002-go-postgresql-backend.md)
+- [MVP policy boundaries](docs/rfc/0001-mvp-policy-boundaries.md)
+- [Phase 0 decision record](docs/decisions-required.md)
