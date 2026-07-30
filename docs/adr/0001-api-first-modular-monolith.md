@@ -1,7 +1,8 @@
 # ADR-0001: API-first centralized modular monolith
 
-- Status: **Proposed**
+- Status: **Accepted**
 - Date: 2026-07-29
+- Accepted: 2026-07-30
 - Decision owners: LafLabs
 
 ## Context
@@ -14,7 +15,7 @@ coordination.
 The MVP needs a REST API, CLI, and dashboard but does not need the operational
 cost or distributed failure modes of microservices.
 
-## Proposed decision
+## Decision
 
 Build an API-first centralized backend as a modular monolith.
 
@@ -86,9 +87,10 @@ deployment, and incident response would add risk before scale requires them.
 Rejected for production because database or backup compromise could expose
 both ciphertext and its key authority.
 
-## Approval consequences
+## Decision scope
 
-Accepting this ADR approves the product shape and deployment boundary, not the
-backend language, initial production KMS provider, final REST resource model,
-RBAC roles, or database migration. Those remain separate approval gates.
-
+This ADR approves the product shape and deployment boundary. The backend stack
+is accepted separately in
+[`ADR-0002`](0002-go-postgresql-backend.md). The initial production KMS
+provider, final REST resource model, exact RBAC matrix, and database migration
+remain separate approval gates.

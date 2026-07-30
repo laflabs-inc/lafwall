@@ -1,6 +1,8 @@
 # Security Invariants
 
-Status: **Draft**
+Status: **Accepted baseline**
+
+Accepted: 2026-07-30
 
 These invariants are the highest-priority repository contract. Changing one is
 a security-policy change and requires explicit approval plus a documented
@@ -108,4 +110,3 @@ security review.
 4. Rate, size, pagination, and concurrency limits are explicit and fail safely.
 5. Readiness does not claim success when required storage or key-provider
    dependencies cannot safely serve requests.
-

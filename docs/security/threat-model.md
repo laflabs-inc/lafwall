@@ -1,6 +1,11 @@
 # Threat Model
 
-Status: **Draft**
+Status: **Accepted baseline**
+
+Accepted: 2026-07-30
+
+This is a living security baseline. It must be reviewed when a trust boundary,
+protected asset, production provider, public API, or deployment model changes.
 
 ## Scope
 
@@ -55,8 +60,10 @@ failure policy. Internal network location is not proof of trust.
 
 ## Primary threats and required controls
 
+<!-- markdownlint-disable MD013 -->
+
 | Threat | Example | Required control |
-|---|---|---|
+| --- | --- | --- |
 | Credential theft | Service token appears in source or logs | One-time display, non-reversible verifier, safe prefix, allowlisted logging, expiry and revocation |
 | Broken object authorization | A valid user changes a project ID to access another tenant | Deny-by-default use-case authorization, tenant-scoped queries, negative integration tests |
 | Ciphertext substitution | A database attacker moves ciphertext to a different secret or version | Canonical AAD bound to stable resource and version IDs |
@@ -73,6 +80,8 @@ failure policy. Internal network location is not proof of trust.
 | Supply-chain compromise | Dependency or build pipeline injects malicious code | Locked dependencies, review, provenance, dependency audit, minimal build permissions |
 | Browser persistence | Dashboard or proxy caches revealed plaintext | Explicit reveal flow, no-store headers, no persistent client state, capture-disabled telemetry |
 | CLI leakage | Secret appears in shell history or process list | stdin/file-descriptor input, masked prompt, no value in argv, safe debug mode |
+
+<!-- markdownlint-enable MD013 -->
 
 ## Critical abuse cases to test
 
@@ -115,4 +124,3 @@ failure policy. Internal network location is not proof of trust.
 
 These risks must be reflected in operator documentation and must not be hidden
 by stronger product claims.
-
