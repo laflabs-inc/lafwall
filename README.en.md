@@ -12,9 +12,10 @@ version history, and auditable access are core product behavior.
 
 ## Status
 
-The initial security, domain, and architecture baseline is accepted. Phase 1
-is establishing the executable security foundation. No database baseline,
-production deployment, or stable public API exists yet.
+The initial security, domain, and architecture baseline and the Phase 1
+executable security foundation are implemented. Phase 2 identity and
+authorization work has not started. No database baseline, production
+deployment, or stable public API exists yet.
 
 Each decision document remains authoritative only for the scope stated in
 that document. Deferred decisions must be approved before dependent work
@@ -73,6 +74,7 @@ scope.
 - [Roadmap](docs/roadmap.md)
 - [Security invariants](docs/security/security-invariants.md)
 - [Threat model](docs/security/threat-model.md)
+- [Encryption boundary](docs/security/encryption-boundary.md)
 - [Domain contract](docs/domain/domain-contract.md)
 - [Platform architecture](docs/adr/0001-api-first-modular-monolith.md)
 - [Backend stack](docs/adr/0002-go-postgresql-backend.md)
