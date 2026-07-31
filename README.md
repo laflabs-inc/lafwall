@@ -13,9 +13,10 @@ Boundary·Version History·감사 가능한 접근을 제품의 핵심 동작으
 
 ## 현재 상태
 
-초기 Security·Domain·Architecture baseline은 승인되었습니다. 현재 Phase
-1에서 실행 가능한 Security Foundation을 구축하고 있습니다. Database
-baseline, Production deployment, stable public API는 아직 존재하지 않습니다.
+초기 Security·Domain·Architecture baseline과 Phase 1의 실행 가능한
+Security Foundation이 구현되었습니다. Phase 2 Identity·Authorization
+작업은 아직 시작하지 않았습니다. Database baseline, Production deployment,
+stable public API는 아직 존재하지 않습니다.
 
 각 Decision 문서는 문서에 명시된 범위에서만 Source of Truth입니다. 보류된
 결정은 해당 결정에 의존하는 작업을 시작하기 전에 승인을 받아야 합니다.
@@ -70,6 +71,7 @@ Dashboard는 동일한 계약을 사용하는 Client입니다.
 - [Roadmap](docs/roadmap.md)
 - [Security Invariants](docs/security/security-invariants.md)
 - [Threat Model](docs/security/threat-model.md)
+- [Encryption Boundary](docs/security/encryption-boundary.md)
 - [Domain Contract](docs/domain/domain-contract.md)
 - [Platform Architecture](docs/adr/0001-api-first-modular-monolith.md)
 - [Backend Stack](docs/adr/0002-go-postgresql-backend.md)

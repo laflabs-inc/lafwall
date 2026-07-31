@@ -10,6 +10,17 @@ The application currently uses only the Go standard library. Security tools
 are invoked at pinned versions through `go run`, so they do not become runtime
 dependencies.
 
+## Encryption boundary
+
+`internal/encryption` implements the versioned AES-256-GCM Envelope and the
+`KekProvider` port. The package uses only Go standard-library cryptography and
+does not log, persist, authorize, or expose plaintext through HTTP.
+
+The canonical AAD and provider contracts are documented in the
+[Encryption Boundary](security/encryption-boundary.md). The deterministic
+provider is declared only in `_test.go`; Application builds cannot select it.
+There is no Production provider, Database adapter, or runtime wiring yet.
+
 ## Local startup
 
 Laf Secrets requires an explicit runtime mode. Development binds to loopback
@@ -75,10 +86,10 @@ no dependency names, configuration, build metadata, or sensitive state.
 Readiness starts false, becomes true only after the listener is established,
 and returns to false before graceful shutdown.
 
-This slice has no storage or key-provider adapter. Production remains blocked
-so readiness cannot falsely claim production capability. Later required
-dependencies must participate in readiness before production startup can be
-enabled.
+The service has no storage or Production key-provider adapter. Production
+remains blocked so readiness cannot falsely claim Production capability.
+Later required dependencies must participate in readiness before Production
+startup can be enabled.
 
 ## CI security boundary
 

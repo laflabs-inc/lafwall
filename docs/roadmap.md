@@ -34,7 +34,7 @@ Exit evidence:
 
 ## Phase 1 — Executable security foundation
 
-Status: **In progress**
+Status: **Complete**
 
 ### Slice 1.1 — Repository and quality skeleton
 
@@ -61,12 +61,14 @@ Exit evidence:
 
 ### Slice 1.2 — Encryption boundary
 
-- Define the `KekProvider` port and production-provider contract.
-- Implement a test-only deterministic fake.
-- Implement AES-256-GCM envelope encryption with versioned canonical AAD.
-- Enforce one DEK per secret version.
-- Add known-answer, tamper, wrong-context, and provider-failure tests.
-- Prove that plaintext and unwrapped DEKs are never persisted or logged.
+Status: **Complete**
+
+- [x] Define the `KekProvider` port and production-provider contract.
+- [x] Implement a test-only deterministic fake.
+- [x] Implement AES-256-GCM envelope encryption with versioned canonical AAD.
+- [x] Enforce one DEK per secret version.
+- [x] Add known-answer, tamper, wrong-context, and provider-failure tests.
+- [x] Prove that plaintext and unwrapped DEKs are never persisted or logged.
 
 Exit evidence:
 
@@ -74,10 +76,12 @@ Exit evidence:
 - Ciphertext cannot be moved across tenant, project, environment, secret, or
   version context.
 - Production startup rejects test and local-only key providers.
+- The [Encryption Boundary](security/encryption-boundary.md) records the
+  format, provider contract, verification evidence, and residual risks.
 
 ## Phase 2 — Identity and authorization foundation
 
-Status: **Blocked by Phase 1**
+Status: **Not started**
 
 ### Slice 2.1 — Human identity boundary
 
