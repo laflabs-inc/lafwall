@@ -34,16 +34,30 @@ Exit evidence:
 
 ## Phase 1 — Executable security foundation
 
-Status: **Not started**
+Status: **In progress**
 
 ### Slice 1.1 — Repository and quality skeleton
 
-- Establish the approved backend workspace.
-- Add format, lint, unit-test, integration-test, dependency-audit, and secret
+Status: **Complete**
+
+- [x] Establish the approved backend workspace.
+- [x] Add format, lint, unit-test, integration-test, dependency-audit, and secret
   scanning commands.
-- Add CI after the remote repository is attached.
-- Add configuration parsing with production-safe validation.
-- Add health and readiness behavior without exposing sensitive state.
+- [x] Add CI after the remote repository is attached.
+- [x] Add configuration parsing with production-safe validation.
+- [x] Add health and readiness behavior without exposing sensitive state.
+
+Exit evidence:
+
+- The standard-library Go service builds from the approved module workspace.
+- Unit and integration tests cover configuration rejection, readiness
+  fail-closed behavior, probe response minimization, and readiness lifecycle.
+- CI runs formatting, vet, race-enabled tests, dependency audit, and Gitleaks
+  worktree and history scans with read-only permissions.
+- Production startup remains blocked until its required security dependencies
+  and approval gates are complete.
+- Operational probes are unversioned, non-cacheable, bodyless, and outside the
+  public REST contract.
 
 ### Slice 1.2 — Encryption boundary
 

@@ -10,9 +10,9 @@ version history, and auditable access are core product behavior.
 
 ## Status
 
-The initial security, domain, and architecture baseline is accepted. No
-production implementation, database baseline, or stable public API exists
-yet.
+The initial security, domain, and architecture baseline is accepted. Phase 1
+is establishing the executable security foundation. No database baseline,
+production deployment, or stable public API exists yet.
 
 Each decision document remains authoritative only for the scope stated in
 that document. Deferred decisions must be approved before dependent work
@@ -67,6 +67,7 @@ scope.
 
 ## Repository guide
 
+- [Development](docs/development.md)
 - [Roadmap](docs/roadmap.md)
 - [Security invariants](docs/security/security-invariants.md)
 - [Threat model](docs/security/threat-model.md)
@@ -75,3 +76,14 @@ scope.
 - [Backend stack](docs/adr/0002-go-postgresql-backend.md)
 - [MVP policy boundaries](docs/rfc/0001-mvp-policy-boundaries.md)
 - [Phase 0 decision record](docs/decisions-required.md)
+
+## Local verification
+
+With the supported Go toolchain installed:
+
+```sh
+make check
+```
+
+See the [development guide](docs/development.md) for configuration, individual
+quality commands, CI behavior, and the operational probe contract.
