@@ -144,6 +144,10 @@
 
 ### Slice 2.3 — Deny-by-default RBAC
 
+상태: **차단됨 — RFC-0002 명시적 승인 대기**
+
+- [Proposed RFC-0002](rfc/0002-mvp-rbac-matrix.md)의 정확한 Role·Permission·
+  scope·grant rule을 Review하고 승인합니다.
 - 승인된 최소 role·permission을 정의합니다.
 - 모든 Use Case에서 Tenant·resource scope를 기준으로 authorize합니다.
 - Permission matrix와 negative contract test를 추가합니다.
