@@ -14,7 +14,7 @@ authorization, immutable version history, and auditability form one consistent
 security boundary.
 
 > **Development status:** This project is in early development and is not
-> ready for production. The database baseline, RBAC, and stable REST API are
+> ready for production. The database baseline and stable REST API are
 > not implemented. Production mode intentionally fails closed.
 
 ## Highlights
@@ -38,7 +38,7 @@ security boundary.
 | Envelope encryption | Complete | Production `KekProvider` is not selected |
 | Human OIDC identity | Complete | Remote JWKS and HTTP wiring are deferred |
 | Service tokens | Complete | One-time reveal, expiry, revocation, exact tenant scope |
-| RBAC | Next slice | The exact role matrix requires separate approval |
+| RBAC | Complete | Five fixed roles, 19 permissions, deny-by-default policy |
 | PostgreSQL and REST API | Not started | Migration and public-contract approval required |
 
 <!-- markdownlint-enable MD013 -->
@@ -137,6 +137,7 @@ Unknown `LAFSECRETS_*` variables, duplicate values, malformed input, and port
 | `internal/encryption` | Envelope encryption and the `KekProvider` port |
 | `internal/identity` | OIDC human identity boundary |
 | `internal/servicetoken` | Opaque service-token issuance and authentication |
+| `internal/authorization` | Deny-by-default RBAC and grant/revoke policy |
 | `internal/health` | Readiness lifecycle |
 | `internal/httpserver` | HTTP server and operational probes |
 | `docs/adr` | Accepted architecture decision records |
@@ -161,10 +162,12 @@ identifiers and standards terms remain in English.
 | [Encryption boundary](docs/security/encryption-boundary.md) | Envelope format, AAD, and `KekProvider` contract |
 | [Human identity boundary](docs/security/human-identity-boundary.md) | OIDC trust and token-validation contract |
 | [Service token boundary](docs/security/service-token-boundary.md) | Opaque credential, verifier, and lifecycle contract |
+| [Authorization boundary](docs/security/authorization-boundary.md) | Role matrix, scopes, grant/revoke, and denial contract |
 | [Domain contract](docs/domain/domain-contract.md) | Entities, lifecycle, and storage invariants |
 | [ADR-0001](docs/adr/0001-api-first-modular-monolith.md) | API-first modular-monolith decision |
 | [ADR-0002](docs/adr/0002-go-postgresql-backend.md) | Go and PostgreSQL backend decision |
 | [RFC-0001](docs/rfc/0001-mvp-policy-boundaries.md) | MVP identity, tenant, environment, and RBAC boundaries |
+| [RFC-0002](docs/rfc/0002-mvp-rbac-matrix.md) | MVP deny-by-default RBAC matrix |
 | [Phase 0 decision record](docs/decisions-required.md) | Approved decisions and remaining gates |
 
 <!-- markdownlint-enable MD013 -->

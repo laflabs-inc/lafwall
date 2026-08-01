@@ -83,7 +83,7 @@
 
 ## Phase 2 — Identity·Authorization Foundation
 
-상태: **진행 중**
+상태: **완료**
 
 ### Slice 2.1 — Human Identity Boundary
 
@@ -130,8 +130,8 @@
   wrong-secret, wrong-tenant, expired, revoked 상태를 하나의 sanitized error로
   거부합니다.
 - Authentication은 immutable Tenant scope를 강제하지만 Permission을 부여하지
-  않습니다. Slice 2.3의 deny-by-default RBAC 전까지 모든 action은
-  차단됩니다.
+  않습니다. 모든 resource action은 별도의 deny-by-default Authorization
+  decision을 요구합니다.
 - Last-used·revocation lifecycle은 immutable value transition이며 concurrent
   revocation이 우선해야 하는 future storage contract를 명시합니다.
 - Race-enabled Unit Test가 fresh entropy, format, exact match, scope, expiry,
@@ -144,23 +144,36 @@
 
 ### Slice 2.3 — Deny-by-default RBAC
 
-상태: **차단됨 — RFC-0002 명시적 승인 대기**
+상태: **완료**
 
-- [Proposed RFC-0002](rfc/0002-mvp-rbac-matrix.md)의 정확한 Role·Permission·
-  scope·grant rule을 Review하고 승인합니다.
-- 승인된 최소 role·permission을 정의합니다.
-- 모든 Use Case에서 Tenant·resource scope를 기준으로 authorize합니다.
-- Permission matrix와 negative contract test를 추가합니다.
+- [x] [RFC-0002](rfc/0002-mvp-rbac-matrix.md)의 정확한 Role·Permission·scope·
+  grant rule을 Review하고 승인합니다.
+- [x] 승인된 최소 Role·Permission을 closed vocabulary로 정의합니다.
+- [x] Principal·Tenant·canonical resource scope를 평가하는 독립 Policy를
+  구현합니다.
+- [x] Permission matrix와 negative contract test를 추가합니다.
 
 완료 증거:
 
-- Anonymous, cross-tenant, expired, revoked, insufficiently scoped access는
-  거부됩니다.
-- Authorization policy를 transport code와 독립적으로 test합니다.
+- 다섯 Role×19 Permission 전체 matrix를 table-driven contract test로
+  검증합니다.
+- Anonymous, zero value, unknown Role·action, cross-tenant, parent, sibling,
+  revoked Assignment, archived parent, insufficient scope는 하나의 sanitized
+  denial로 거부됩니다.
+- Tenant→Project→Environment 하향 scope만 적용하며 no-upward inheritance를
+  검증합니다.
+- Admin·Editor·Auditor는 `secret:read_value`를 받지 않고 Service Principal은
+  `secret_editor`·`secret_accessor`만 받을 수 있습니다.
+- Grant·revoke는 immutable value transition이며 마지막 distinct Human
+  `tenant_admin` revoke를 거부합니다.
+- [Authorization Boundary](security/authorization-boundary.md)에 Policy 입력,
+  evaluation, redaction, 보류된 storage·Audit contract를 기록했습니다.
+- Database Migration, Public API, Production wiring, Audit persistence는
+  추가하지 않았습니다.
 
 ## Phase 3 — Audit 가능한 Project·Environment 관리
 
-상태: **Phase 2에 의해 차단됨**
+상태: **초기 Database Migration·storage baseline 승인 대기**
 
 ### Slice 3.1 — Project Lifecycle
 

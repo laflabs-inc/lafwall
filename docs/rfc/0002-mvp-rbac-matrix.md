@@ -1,12 +1,13 @@
 # RFC-0002: MVP Deny-by-default RBAC Matrix
 
-- 상태: **Proposed(명시적 승인 대기)**
+- 상태: **Accepted(승인됨)**
 - 작성일: 2026-08-01
-- 결정 주체: **미정 — LafLabs 승인 필요**
+- 승인일: 2026-08-01
+- 결정 주체: LafLabs
 
-> 이 RFC는 승인된 Security Baseline을 변경하지 않는 제안서입니다. LafLabs가
-> 정확한 matrix를 명시적으로 승인하고 상태를 `Accepted`로 바꾸기 전에는
-> 구현 근거로 사용할 수 없습니다.
+이 RFC는 Laf Secrets MVP의 규범적인 RBAC 계약입니다. Permission·Role·scope·
+grant rule을 변경하려면 후속 Security Policy 승인과 contract regression
+test가 필요합니다.
 
 ## 요약
 
@@ -326,9 +327,9 @@ MVP는 Environment를 가장 작은 Assignment scope로 사용합니다.
 정책 충돌 순서와 effective Permission 설명을 복잡하게 만듭니다. MVP는
 고정 Role Permission의 합집합과 fail-closed Domain constraint만 사용합니다.
 
-## 승인 효과
+## 승인 범위
 
-LafLabs가 이 RFC를 명시적으로 승인하면 다음 작업만 허용됩니다.
+LafLabs는 다음 범위를 명시적으로 승인했습니다.
 
 1. 상태를 `Accepted`로 변경하고 승인일을 기록합니다.
 2. `docs/decisions-required.md`의 D7 gate를 해결합니다.
@@ -336,5 +337,4 @@ LafLabs가 이 RFC를 명시적으로 승인하면 다음 작업만 허용됩니
    contract test를 구현합니다.
 
 승인은 Database Migration, Public API, Production wiring, Audit storage를
-승인하지 않습니다. 이 RFC가 승인되기 전에는 Slice 2.3 code를 작성하지
-않습니다.
+승인하지 않습니다.

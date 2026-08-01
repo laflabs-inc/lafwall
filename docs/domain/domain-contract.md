@@ -73,8 +73,8 @@ Project 안에서 분리된 deployment context입니다.
 ### RoleAssignment
 
 정의된 Tenant, Project, Environment scope에서 Principal에게 승인된 role을
-부여합니다. Inheritance가 승인되면 이를 명시적으로 정의하고 test합니다.
-Grant가 없으면 거부합니다.
+부여합니다. [RFC-0002](../rfc/0002-mvp-rbac-matrix.md)의 하향 scope와
+Principal eligibility를 따르며 Grant가 없으면 거부합니다.
 
 ### ServiceToken
 
@@ -108,14 +108,16 @@ Security-relevant attempt나 완료된 action의 append-only record입니다.
 
 ## Permission Vocabulary Boundary
 
-MVP는 fine-grained permission 위에 고정 role을 사용합니다. 정확한 role 이름,
-scope, inheritance는 구현 전에 별도로 승인된 RBAC RFC가 필요합니다. Policy는
-다음과 같은 action으로 표현합니다.
+MVP는 fine-grained Permission 위에 RFC-0002의 다섯 고정 Role을 사용합니다.
+정확한 Role matrix, scope, Principal eligibility, grant·revoke rule은 승인된
+[RFC-0002](../rfc/0002-mvp-rbac-matrix.md)가 규범적인 계약입니다. Policy는
+다음 action만 사용합니다.
 
-- `project:create`, `project:read`, `project:update`, `project:archive`
-- `environment:create`, `environment:read`, `environment:update`
+- `project:create`, `project:read`, `project:update`, `project:archive`,
+  `project:restore`
+- `environment:read`
 - `secret:create`, `secret:read_metadata`, `secret:write_version`
-- `secret:read_value`, `secret:read_history`, `secret:archive`
+- `secret:read_value`, `secret:read_history`, `secret:archive`, `secret:restore`
 - `service_token:create`, `service_token:read_metadata`,
   `service_token:revoke`
 - `role_assignment:read`, `role_assignment:manage`
