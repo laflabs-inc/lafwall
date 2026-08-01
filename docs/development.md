@@ -6,9 +6,9 @@
 - GNU Make or a compatible `make`
 - Git for history-aware secret scanning
 
-The application currently uses only the Go standard library. Security tools
-are invoked at pinned versions through `go run`, so they do not become runtime
-dependencies.
+The service uses the Go standard library plus pinned `go-oidc` and `go-jose`
+dependencies for the human identity boundary. Security tools are invoked at
+pinned versions through `go run`, so they do not become runtime dependencies.
 
 ## Encryption boundary
 
@@ -20,6 +20,24 @@ The canonical AAD and provider contracts are documented in the
 [Encryption Boundary](security/encryption-boundary.md). The deterministic
 provider is declared only in `_test.go`; Application builds cannot select it.
 There is no Production provider, Database adapter, or runtime wiring yet.
+
+## Human identity boundary
+
+`internal/identity` verifies signed OIDC ID tokens from one explicitly
+configured HTTPS issuer and maps immutable `(issuer, subject)` claims to an
+internal human principal. It requires an exact single audience and explicit
+asymmetric signing-algorithm allowlist. Email and other profile claims are not
+identity proof.
+
+Signature, issuer, audience, authorized-party, expiry, issued-at, not-before,
+duplicate-claim, subject, size, and nonce rejection are covered by race-enabled
+unit tests. All authentication failures are sanitized and do not include raw
+tokens or claim values.
+
+The full contract and deferred provider requirements are documented in the
+[Human Identity Boundary](security/human-identity-boundary.md). No remote JWKS
+adapter, Laf ID Production configuration, HTTP authentication wiring, session,
+or Database principal mapping exists yet. Production startup remains blocked.
 
 ## Local startup
 

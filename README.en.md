@@ -12,10 +12,10 @@ version history, and auditable access are core product behavior.
 
 ## Status
 
-The initial security, domain, and architecture baseline and the Phase 1
-executable security foundation are implemented. Phase 2 identity and
-authorization work has not started. No database baseline, production
-deployment, or stable public API exists yet.
+The initial security, domain, and architecture baseline, the Phase 1
+executable security foundation, and the Phase 2 human identity boundary are
+implemented. Service tokens and RBAC are not implemented. No database
+baseline, production deployment, or stable public API exists yet.
 
 Each decision document remains authoritative only for the scope stated in
 that document. Deferred decisions must be approved before dependent work
@@ -75,6 +75,7 @@ scope.
 - [Security invariants](docs/security/security-invariants.md)
 - [Threat model](docs/security/threat-model.md)
 - [Encryption boundary](docs/security/encryption-boundary.md)
+- [Human identity boundary](docs/security/human-identity-boundary.md)
 - [Domain contract](docs/domain/domain-contract.md)
 - [Platform architecture](docs/adr/0001-api-first-modular-monolith.md)
 - [Backend stack](docs/adr/0002-go-postgresql-backend.md)

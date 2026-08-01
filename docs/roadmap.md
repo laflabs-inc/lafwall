@@ -81,13 +81,29 @@ Exit evidence:
 
 ## Phase 2 — Identity and authorization foundation
 
-Status: **Not started**
+Status: **In progress**
 
 ### Slice 2.1 — Human identity boundary
 
-- Verify OIDC tokens from an approved issuer.
-- Map immutable issuer and subject identifiers to an internal principal.
-- Reject ambiguous issuer, audience, time, or signature state.
+Status: **Complete**
+
+- [x] Verify OIDC tokens from an approved issuer.
+- [x] Map immutable issuer and subject identifiers to an internal principal.
+- [x] Reject ambiguous issuer, audience, time, or signature state.
+
+Exit evidence:
+
+- Pinned reviewed libraries verify signed ID tokens under an explicit
+  asymmetric-algorithm allowlist.
+- Exact issuer, single audience, authorized party, time, subject, nonce, token
+  size, and duplicate-claim checks fail closed behind one sanitized error.
+- Human principals contain only immutable `(issuer, subject)` identity; profile
+  claims cannot change identity.
+- Race-enabled tests cover valid signatures plus claim, algorithm, signature,
+  nonce, dependency, and cross-issuer rejection.
+- The [Human Identity Boundary](security/human-identity-boundary.md) records the
+  trust configuration, KeySet contract, evidence, and deferred Production
+  wiring.
 
 ### Slice 2.2 — Service tokens
 
