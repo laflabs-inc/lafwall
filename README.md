@@ -45,6 +45,27 @@ Security Boundary로 제공합니다.
 
 상세 진행 순서와 완료 조건은 [Roadmap](docs/roadmap.md)을 기준으로 합니다.
 
+## 지금 사용할 수 있는 범위
+
+이 Repository는 현재 **제품 설치판이 아니라 Security Boundary를 구현·검증하는
+개발 단계**입니다.
+
+<!-- markdownlint-disable MD013 -->
+
+| 현재 가능 | 아직 불가능 |
+| --- | --- |
+| 전체 unit·integration·Security Gate 실행 | Secret 생성·조회·Version 관리 |
+| Encryption, Identity, Service Token, RBAC Domain Policy 검증 | REST API 호출 |
+| Development process 실행과 `/livez`·`/readyz` 확인 | CLI·Web Dashboard 사용 |
+| 승인된 계약과 구현의 일치 여부 검토 | Production mode 실행 |
+
+<!-- markdownlint-enable MD013 -->
+
+`internal/*` package는 외부 SDK가 아니며 호환성이 보장되는 Public API도
+아닙니다. 현재 동작을 확인하는 기준은 각 package의 contract test입니다.
+제품 사용법은 PostgreSQL storage, Secret lifecycle, stable REST API가 구현된
+뒤 해당 Phase에서 추가합니다.
+
 ## 목표 Architecture
 
 ```mermaid
@@ -68,15 +89,52 @@ Modular Monolith로 배포합니다.
 - GNU Make 또는 호환되는 `make`
 - history-aware Secret scan을 위한 Git
 
-### 설치 및 검증
+Windows에서는 GitHub Actions와 같은 Linux 환경을 재현할 수 있도록 WSL2를
+권장합니다. Native Windows에서 Race Detector를 생략해 성공으로 간주하지
+마세요.
+
+### 5분 검증
 
 ```sh
 git clone https://github.com/laflabs-inc/lafwall.git
 cd lafwall
-make check
+go version
+make test
 ```
 
-### Development mode 실행
+`go version`은 `go1.26.5`를 표시해야 합니다. `make test`는 Race Detector를
+활성화한 unit·integration test를 실행하며 모든 command가 exit code `0`으로
+끝나면 성공입니다.
+
+변경을 제출하기 전에는 Git history Secret scan까지 포함한 전체 Gate를
+실행합니다. 첫 실행은 고정 버전의 `govulncheck`와 Gitleaks를 내려받으므로
+Network 연결이 필요합니다.
+
+```sh
+make ci
+```
+
+### 기능별 검증
+
+<!-- markdownlint-disable MD013 -->
+
+| 확인할 경계 | 명령 |
+| --- | --- |
+| Envelope Encryption | `go test -race -count=1 -v ./internal/encryption` |
+| Human OIDC Identity | `go test -race -count=1 -v ./internal/identity` |
+| Service Token | `go test -race -count=1 -v ./internal/servicetoken` |
+| RBAC·scope·grant/revoke | `go test -race -count=1 -cover -v ./internal/authorization` |
+| Repository 전체 | `make ci` |
+
+<!-- markdownlint-enable MD013 -->
+
+RBAC test는 5개 Role×19개 Permission matrix, Tenant·Project·Environment scope
+격리, Service Principal 제한, Admin의 plaintext access 차단, 마지막 Human
+`tenant_admin` 보호를 검증합니다.
+
+### Development mode Smoke Test
+
+첫 번째 Terminal에서 Service를 실행합니다.
 
 ```sh
 export LAFSECRETS_RUNTIME_MODE=development
@@ -86,12 +144,16 @@ make run
 기본 주소는 `127.0.0.1:8080`입니다. 현재 공개된 endpoint는 제품 API가 아닌
 운영 probe뿐입니다.
 
+두 번째 Terminal에서 probe를 확인합니다.
+
 ```sh
 curl -i http://127.0.0.1:8080/livez
 curl -i http://127.0.0.1:8080/readyz
 ```
 
 정상 상태에서는 두 endpoint 모두 body 없이 `204 No Content`를 반환합니다.
+이 Smoke Test는 process lifecycle만 확인하며 Encryption, Authentication,
+Authorization 또는 Secret CRUD의 end-to-end 동작을 증명하지 않습니다.
 
 ## Configuration
 
