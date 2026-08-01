@@ -57,9 +57,28 @@ formatting redaction, sanitized failure를 검증합니다. Deterministic entrop
 전체 계약과 보류된 storage·concurrency 요구 사항은
 [Service Token Boundary](security/service-token-boundary.md)에 정의되어
 있습니다. Database persistence, HTTP Authentication, Audit transaction,
-Permission·RBAC는 아직 연결되지 않았습니다. Service Principal은 Tenant
-scope만 증명하며 어떤 resource action도 허용하지 않습니다. Production
-startup은 계속 차단됩니다.
+Authorization wiring은 아직 연결되지 않았습니다. Service Principal은 Tenant
+scope만 증명하며 authoritative Role Assignment와 별도의 Authorization
+decision 없이는 어떤 resource action도 허용하지 않습니다. Production startup은
+계속 차단됩니다.
+
+## Authorization Boundary
+
+`internal/authorization`은 승인된 다섯 고정 Role, 19개 Permission,
+Tenant→Project→Environment 하향 scope를 pure Domain Policy로 구현합니다.
+모든 operation은 authenticated Principal, exact action, authoritative lookup으로
+resolve한 target, 최신 Assignment snapshot을 요구합니다.
+
+Policy는 unknown·malformed·cross-tenant·archived·insufficient state를 하나의
+sanitized denial로 거부하고 routine formatting에서 Principal·Scope·Assignment·
+Target metadata를 redact합니다. Service Principal은 `secret_editor`와
+`secret_accessor`만 받을 수 있고 Admin·Editor·Auditor는 Secret plaintext를
+read할 수 없습니다.
+
+전체 계약과 보류된 storage·Audit 요구 사항은
+[Authorization Boundary](security/authorization-boundary.md)에 정의되어
+있습니다. Database Adapter, initial administrator bootstrap, atomic Audit
+transaction, HTTP wiring은 아직 없으며 Production startup은 계속 차단됩니다.
 
 ## Local 실행
 
