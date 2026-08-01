@@ -1,118 +1,116 @@
 # Domain Contract
 
-Status: **Accepted baseline**
+상태: **Accepted Baseline(승인된 기준선)**
 
-Accepted: 2026-07-30
+승인일: 2026-07-30
 
-This document defines domain meaning, not a stable HTTP or database schema.
-Public API and migration approval are separate gates.
+이 문서는 stable HTTP·Database schema가 아닌 Domain의 의미를 정의합니다.
+Public API와 Migration은 별도의 approval gate입니다.
 
-## Security boundary
+## Security Boundary
 
-Every persisted domain resource belongs to exactly one `Tenant`. A tenant is
-an internal isolation boundary even if the first product experience creates a
-personal tenant automatically and does not yet expose organization
-management.
+Persist되는 모든 Domain resource는 정확히 하나의 `Tenant`에 속합니다. 초기
+Product experience가 Personal Tenant를 자동으로 생성하고 Organization
+관리를 노출하지 않더라도 Tenant는 internal isolation boundary입니다.
 
-No query or authorization decision may infer tenancy from a user-controlled
-resource identifier alone.
+어떤 query나 Authorization decision도 user-controlled resource identifier만으로
+Tenant를 추론해서는 안 됩니다.
 
-## Core entities
+## Core Entity
 
 ### Tenant
 
-The root isolation boundary for resources, principals, role assignments, and
-audit records.
+Resource, Principal, Role Assignment, Audit Record의 최상위 isolation
+boundary입니다.
 
 ### Principal
 
-An authenticated actor:
+인증된 Actor입니다.
 
-- `HumanPrincipal`, keyed by immutable OIDC issuer and subject; or
-- `ServicePrincipal`, authenticated by an opaque service token.
+- Immutable OIDC issuer·subject로 식별하는 `HumanPrincipal`
+- Opaque Service Token으로 인증하는 `ServicePrincipal`
 
-Email, display name, and token prefix are metadata, not identity proof.
+Email, display name, token prefix는 metadata이며 identity proof가 아닙니다.
 
 ### Project
 
-A namespace and policy boundary for related environments and secrets.
+연관된 Environment·Secret의 namespace이자 Policy Boundary입니다.
 
-- Has an immutable ID and tenant ID.
-- Has a tenant-unique, human-readable slug.
-- Can be archived and restored.
-- Archival denies normal descendant access without destroying history.
+- Immutable ID와 Tenant ID를 가집니다.
+- Tenant 안에서 unique한 human-readable slug를 가집니다.
+- Archive·restore할 수 있습니다.
+- Archive하면 history를 제거하지 않고 하위 resource의 일반 access를
+  거부합니다.
 
 ### Environment
 
-An isolated deployment context within a project.
+Project 안에서 분리된 deployment context입니다.
 
-- Has an immutable ID and project ID.
-- Development, Staging, and Production are created as initial defaults.
-- Development, Staging, and Production cannot be renamed or removed during
-  the MVP.
-- Custom environments are outside the MVP.
+- Immutable ID와 Project ID를 가집니다.
+- Development, Staging, Production을 초기 기본값으로 생성합니다.
+- MVP 동안 Development, Staging, Production의 이름을 변경하거나 제거할 수
+  없습니다.
+- Custom Environment는 MVP 범위 밖입니다.
 
 ### Secret
 
-A logical secret key within one environment.
+하나의 Environment에 속한 logical Secret key입니다.
 
-- Has an immutable ID.
-- Has an environment-unique canonical key.
-- Stores metadata and lifecycle state, never a plaintext value.
-- Points to a current immutable version.
+- Immutable ID를 가집니다.
+- Environment 안에서 unique한 canonical key를 가집니다.
+- Metadata·lifecycle state만 저장하며 plaintext value는 저장하지 않습니다.
+- 현재 immutable Version을 참조합니다.
 
 ### SecretVersion
 
-An immutable encrypted value belonging to one logical secret.
+하나의 logical Secret에 속한 immutable encrypted value입니다.
 
-- Has an immutable ID and monotonically allocated sequence.
-- Contains an encryption envelope and safe creation metadata.
-- Cannot be edited after creation.
-- Historical access is separately authorized and audited.
+- Immutable ID와 단조롭게 할당되는 sequence를 가집니다.
+- Encryption Envelope과 안전한 creation metadata를 포함합니다.
+- 생성 후 수정할 수 없습니다.
+- Historical access는 별도로 authorize·audit합니다.
 
 ### RoleAssignment
 
-Grants an approved role to a principal at a defined tenant, project, or
-environment scope. Inheritance, if approved, is explicit and tested. Absence
-of a grant means denial.
+정의된 Tenant, Project, Environment scope에서 Principal에게 승인된 role을
+부여합니다. Inheritance가 승인되면 이를 명시적으로 정의하고 test합니다.
+Grant가 없으면 거부합니다.
 
 ### ServiceToken
 
-An authentication credential for a `ServicePrincipal`.
+`ServicePrincipal`의 Authentication credential입니다.
 
-- Plaintext is shown once.
-- Persistent state contains only a public identifier, non-reversible verifier,
-  scope, expiry, status, and safe operational metadata.
-- Revocation is immediate at the authoritative verification boundary.
+- Plaintext는 한 번만 표시합니다.
+- Persistent state에는 public identifier, non-reversible verifier, scope,
+  expiry, status, 안전한 operational metadata만 저장합니다.
+- Authoritative verification boundary에서 revocation을 즉시 적용합니다.
 
 ### AuditEvent
 
-An append-only record of a security-relevant attempt or completed action.
+Security-relevant attempt나 완료된 action의 append-only record입니다.
 
-- Contains stable identifiers, outcome, time, correlation, and safe context.
-- Never contains secret plaintext, credentials, raw authorization data, or
-  wrapped key material.
+- Stable identifier, outcome, time, correlation, 안전한 context를 포함합니다.
+- Secret plaintext, credential, raw Authorization data, Wrapped Key material을
+  포함하지 않습니다.
 
-## Lifecycle rules
+## Lifecycle Rule
 
-1. Creating a secret creates version `1` atomically.
-2. Changing a value appends a new version; it never updates an old version.
-3. Metadata reads do not decrypt secret values.
-4. Plaintext access is an explicit use case, separately authorized and
-   audited.
-5. Archive and soft deletion remove normal accessibility while preserving
-   recovery and audit history.
-6. A state-changing transaction and its required success audit event commit
-   together.
-7. Cross-tenant relationships are invalid even if individual IDs exist.
-8. Parent archival or deletion restricts descendant access according to an
-   approved lifecycle policy.
+1. Secret 생성은 Version `1`을 atomic하게 생성합니다.
+2. Value 변경은 새 Version을 append하며 과거 Version을 수정하지 않습니다.
+3. Metadata read는 Secret value를 decrypt하지 않습니다.
+4. Plaintext access는 별도로 authorize·audit하는 명시적인 Use Case입니다.
+5. Archive·soft deletion은 recovery·Audit history를 보존하면서 일반 access를
+   제거합니다.
+6. State-changing transaction과 필수 success Audit Event는 함께 commit합니다.
+7. 개별 ID가 존재하더라도 cross-tenant relationship은 유효하지 않습니다.
+8. Parent archive·deletion은 승인된 lifecycle policy에 따라 하위 resource의
+   access를 제한합니다.
 
-## Permission vocabulary boundary
+## Permission Vocabulary Boundary
 
-The MVP uses fixed roles over fine-grained permissions. Exact role names,
-scope, and inheritance require a separately accepted RBAC RFC before
-implementation. Policy should be expressed using actions such as:
+MVP는 fine-grained permission 위에 고정 role을 사용합니다. 정확한 role 이름,
+scope, inheritance는 구현 전에 별도로 승인된 RBAC RFC가 필요합니다. Policy는
+다음과 같은 action으로 표현합니다.
 
 - `project:create`, `project:read`, `project:update`, `project:archive`
 - `environment:create`, `environment:read`, `environment:update`
@@ -123,16 +121,16 @@ implementation. Policy should be expressed using actions such as:
 - `role_assignment:read`, `role_assignment:manage`
 - `audit:read`
 
-`secret:read_value` is deliberately distinct from project administration and
-metadata access.
+`secret:read_value`는 의도적으로 Project administration·metadata access와
+분리합니다.
 
-## Invariants requiring storage enforcement
+## Storage에서 강제할 Invariant
 
-- Tenant ownership is non-null and immutable.
-- Project slugs are unique within a tenant.
-- Environment identifiers are unique within a project.
-- Secret canonical keys are unique among active secrets in an environment.
-- Version sequence is unique and monotonic within a secret.
-- Historical versions and audit events are immutable to the runtime role.
-- Current-version references cannot point across secrets.
-- Role-assignment scope cannot cross the principal's tenant boundary.
+- Tenant ownership은 non-null·immutable입니다.
+- Project slug는 Tenant 안에서 unique합니다.
+- Environment identifier는 Project 안에서 unique합니다.
+- Secret canonical key는 Environment의 active Secret 사이에서 unique합니다.
+- Version sequence는 Secret 안에서 unique하며 단조롭게 증가합니다.
+- Historical Version·Audit Event는 runtime role로 수정할 수 없습니다.
+- Current Version reference는 다른 Secret을 가리킬 수 없습니다.
+- Role Assignment scope는 Principal의 Tenant boundary를 넘을 수 없습니다.
