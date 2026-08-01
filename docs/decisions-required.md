@@ -70,9 +70,12 @@ Domain Entity이지만 MVP 동안 이름을 변경·제거하거나 Custom Envir
 
 MVP는 fine-grained internal permission 위에 소수의 고정 role을 사용하고
 custom role을 지원하지 않습니다. `secret:read_value`는 administration·
-metadata access와 분리합니다. 정확한 role 이름, Permission, scope,
-inheritance rule은 Slice 2.3 전에 별도의 Proposed RFC와 명시적인 승인을
-받아야 합니다.
+metadata access와 분리합니다.
+
+정확한 role 이름, Permission, scope, grant rule을
+[`RFC-0002`](rfc/0002-mvp-rbac-matrix.md)에서 **Proposed** 상태로
+제안했습니다. 이 문서는 아직 승인된 결정이 아니며 Slice 2.3 구현 전에
+LafLabs의 명시적인 승인을 받아야 합니다.
 
 ## D8 — Secret Access API
 
@@ -87,6 +90,6 @@ resource path, request body, concurrency·idempotency behavior, error format은
 
 - 초기 Database Migration·storage baseline
 - 초기 Production deployment Environment·KMS provider
-- 정확한 RBAC matrix
+- 정확한 RBAC matrix — [`RFC-0002`](rfc/0002-mvp-rbac-matrix.md) 승인 대기
 - 초기 versioned OpenAPI contract
 - CLI 작업 시작 시 구현 언어
