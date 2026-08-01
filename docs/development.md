@@ -10,6 +10,66 @@ Service는 Go standard library와 Human Identity Boundary에 필요한 고정 �
 `go-oidc`, `go-jose` dependency를 사용합니다. Security tool은 runtime
 dependency가 되지 않도록 고정 버전을 `go run`으로 실행합니다.
 
+Windows에서는 GitHub Actions와 동일한 Linux command·Race Detector 동작을
+재현하기 위해 WSL2 사용을 권장합니다. 검증 환경이 Race Detector를 지원하지
+않으면 `-race`를 제거하지 말고 WSL2 또는 GitHub Actions에서 실행합니다.
+
+## 현재 개발자 인터페이스
+
+현재 외부에서 사용할 수 있는 Product API, CLI, Dashboard는 없습니다.
+`internal/*` package는 Application 내부 구현이며 external SDK나 stable Public
+API로 import하는 용도가 아닙니다.
+
+현재 제공하는 실행 가능한 interface는 다음 두 가지입니다.
+
+1. 각 Security Boundary의 contract test
+2. Development process의 `/livez`·`/readyz` operational probe
+
+따라서 Encryption, Service Token, RBAC를 확인하려면 아래 package test를
+실행해야 합니다. Development Server를 실행해도 이 기능을 HTTP로 직접 호출할
+수는 없습니다.
+
+## 처음 검증하기
+
+```sh
+git clone https://github.com/laflabs-inc/lafwall.git
+cd lafwall
+go version
+make test
+```
+
+`go version`은 `go1.26.5`여야 합니다. `make test`는 Race Detector가 활성화된
+unit·integration test를 실행합니다. 모든 command가 exit code `0`으로 끝나면
+성공입니다.
+
+Repository 변경을 제출하기 전에는 CI와 동일한 전체 Gate를 실행합니다.
+
+```sh
+make ci
+```
+
+첫 실행은 고정 버전의 `govulncheck`와 Gitleaks를 내려받으므로 Network 연결이
+필요합니다. `make ci`는 전체 Git history를 읽으므로 source archive가 아닌
+full Git checkout에서 실행해야 합니다.
+
+## Boundary별 검증
+
+<!-- markdownlint-disable MD013 -->
+
+| 목적 | 명령 | 핵심 검증 |
+| --- | --- | --- |
+| Envelope Encryption | `go test -race -count=1 -v ./internal/encryption` | Known-answer, tamper, wrong context, fresh DEK·nonce, redaction |
+| Human Identity | `go test -race -count=1 -v ./internal/identity` | Signature, issuer, audience, time, nonce, duplicate claim, redaction |
+| Service Token | `go test -race -count=1 -v ./internal/servicetoken` | Entropy, verifier, Tenant scope, expiry, revocation, one-time reveal |
+| Authorization | `go test -race -count=1 -cover -v ./internal/authorization` | 5×19 matrix, scope isolation, Service Principal, grant·revoke, last admin |
+| Operational lifecycle | `go test -race -tags=integration -run '^TestIntegration' -count=1 -v ./...` | Listener readiness와 graceful shutdown |
+
+<!-- markdownlint-enable MD013 -->
+
+이 test에 사용하는 key, token, identity는 deterministic fake 또는 synthetic
+test data입니다. 실제 Secret이나 운영 credential을 test input으로 사용하지
+않습니다.
+
 ## Encryption Boundary
 
 `internal/encryption`은 versioned AES-256-GCM Envelope과 `KekProvider` port를
@@ -85,6 +145,8 @@ transaction, HTTP wiring은 아직 없으며 Production startup은 계속 차단
 Laf Secrets는 명시적인 runtime mode를 요구합니다. Development mode의 기본
 listen address는 loopback입니다.
 
+첫 번째 Terminal에서 실행합니다.
+
 ```sh
 export LAFSECRETS_RUNTIME_MODE=development
 make run
@@ -92,6 +154,17 @@ make run
 
 `LAFSECRETS_HTTP_ADDRESS`에 유효한 `host:port` 값을 지정하면 기본값
 `127.0.0.1:8080`을 변경할 수 있습니다.
+
+두 번째 Terminal에서 확인합니다.
+
+```sh
+curl -i http://127.0.0.1:8080/livez
+curl -i http://127.0.0.1:8080/readyz
+```
+
+정상 상태에서는 두 요청 모두 body 없이 `204 No Content`를 반환합니다. 이
+Smoke Test는 HTTP process와 readiness lifecycle만 확인하며 Secret CRUD,
+Encryption, Authentication, Authorization의 end-to-end 사용법은 아닙니다.
 
 알 수 없는 `LAFSECRETS_*` 변수, 잘못된 값, 중복 값, 알 수 없는 runtime
 mode, port `0`은 startup을 실패시킵니다. 거부된 configuration value는

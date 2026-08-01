@@ -45,6 +45,27 @@ security boundary.
 
 The [roadmap](docs/roadmap.md) defines the detailed order and exit criteria.
 
+## What is usable today
+
+This repository is currently a **development-stage implementation of security
+boundaries, not an installable secret-management product**.
+
+<!-- markdownlint-disable MD013 -->
+
+| Available now | Not available yet |
+| --- | --- |
+| Run the full unit, integration, and security gates | Create, read, or version secrets |
+| Verify encryption, identity, service-token, and RBAC domain policy | Call a product REST API |
+| Run the development process and inspect `/livez` and `/readyz` | Use a CLI or web dashboard |
+| Review implementation against accepted contracts | Run in production mode |
+
+<!-- markdownlint-enable MD013 -->
+
+The `internal/*` packages are neither an external SDK nor a compatibility-bound
+public API. Their contract tests are the current executable reference. Product
+usage documentation will be added after PostgreSQL storage, the secret
+lifecycle, and the stable REST API are implemented in their roadmap phases.
+
 ## Target architecture
 
 ```mermaid
@@ -69,15 +90,52 @@ justifies extraction.
 - GNU Make or a compatible `make`
 - Git for history-aware secret scanning
 
-### Install and verify
+On Windows, WSL2 is recommended to reproduce the Linux environment used by
+GitHub Actions. Do not treat a run that omits the race detector as successful.
+
+### Five-minute verification
 
 ```sh
 git clone https://github.com/laflabs-inc/lafwall.git
 cd lafwall
-make check
+go version
+make test
 ```
 
-### Run in development mode
+`go version` must report `go1.26.5`. `make test` runs unit and integration tests
+with the race detector. The run succeeds when every command exits with code
+`0`.
+
+Before submitting a change, run the complete gate, including the Git-history
+secret scan. The first run requires network access to download the pinned
+`govulncheck` and Gitleaks versions.
+
+```sh
+make ci
+```
+
+### Verify one boundary
+
+<!-- markdownlint-disable MD013 -->
+
+| Boundary | Command |
+| --- | --- |
+| Envelope encryption | `go test -race -count=1 -v ./internal/encryption` |
+| Human OIDC identity | `go test -race -count=1 -v ./internal/identity` |
+| Service tokens | `go test -race -count=1 -v ./internal/servicetoken` |
+| RBAC, scopes, and grant/revoke | `go test -race -count=1 -cover -v ./internal/authorization` |
+| Entire repository | `make ci` |
+
+<!-- markdownlint-enable MD013 -->
+
+The RBAC tests cover the five-role by 19-permission matrix, tenant, project, and
+environment scope isolation, service-principal restrictions, denial of
+plaintext access to administrators, and protection of the last human
+`tenant_admin`.
+
+### Development-mode smoke test
+
+Start the service in the first terminal.
 
 ```sh
 export LAFSECRETS_RUNTIME_MODE=development
@@ -87,12 +145,16 @@ make run
 The default address is `127.0.0.1:8080`. Only operational probes, not product
 API endpoints, are currently exposed.
 
+Check the probes from a second terminal.
+
 ```sh
 curl -i http://127.0.0.1:8080/livez
 curl -i http://127.0.0.1:8080/readyz
 ```
 
 Both endpoints return `204 No Content` with an empty body while healthy.
+This smoke test covers only the process lifecycle. It does not prove
+end-to-end encryption, authentication, authorization, or secret CRUD.
 
 ## Configuration
 
