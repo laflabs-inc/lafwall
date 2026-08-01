@@ -110,10 +110,37 @@
 
 ### Slice 2.2 — Service Token
 
-- Entropy가 높은 opaque token을 발급하고 plaintext는 한 번만 표시합니다.
-- Non-reversible verifier와 token metadata만 persist합니다.
-- Expiry, revocation, last-used metadata, scoped Authorization을 지원합니다.
-- 권한을 부여하지 않는 안전한 token prefix로 credential을 식별합니다.
+상태: **완료**
+
+- [x] Entropy가 높은 opaque Token을 발급하고 plaintext는 한 번만
+  표시합니다.
+- [x] Non-reversible verifier와 Token metadata만 persistent state로
+  분리합니다.
+- [x] Expiry, revocation, last-used metadata, exact Tenant scope를
+  지원합니다.
+- [x] 권한을 부여하지 않는 안전한 Token prefix로 credential을 식별합니다.
+
+완료 증거:
+
+- 매 발급마다 CSPRNG 기반 128-bit public ID와 256-bit secret을 새로
+  생성합니다.
+- Persistent `Record`는 domain-separated SHA-256 verifier만 보유하고 plaintext
+  credential·secret component를 보유하지 않습니다.
+- Candidate verifier를 constant-time으로 비교하고 malformed, unknown,
+  wrong-secret, wrong-tenant, expired, revoked 상태를 하나의 sanitized error로
+  거부합니다.
+- Authentication은 immutable Tenant scope를 강제하지만 Permission을 부여하지
+  않습니다. Slice 2.3의 deny-by-default RBAC 전까지 모든 action은
+  차단됩니다.
+- Last-used·revocation lifecycle은 immutable value transition이며 concurrent
+  revocation이 우선해야 하는 future storage contract를 명시합니다.
+- Race-enabled Unit Test가 fresh entropy, format, exact match, scope, expiry,
+  revocation, clock rollback, redaction, failure sanitization을 검증합니다.
+- [Service Token Boundary](security/service-token-boundary.md)에 format,
+  verifier, one-time reveal, storage·concurrency contract, 보류된 Production
+  wiring을 기록했습니다.
+- Database Migration, Public API, RBAC matrix, Production runtime wiring은
+  추가하지 않았습니다.
 
 ### Slice 2.3 — Deny-by-default RBAC
 
