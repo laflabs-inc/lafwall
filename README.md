@@ -14,14 +14,15 @@ Authorization, immutable Version History, Auditability를 하나의 일관된
 Security Boundary로 제공합니다.
 
 > **개발 상태:** 현재 초기 개발 단계이며 Production에서 사용할 수 없습니다.
-> Database baseline, Service Token, RBAC, stable REST API는 아직 구현되지
-> 않았고, Production mode는 의도적으로 fail-closed 처리됩니다.
+> Database baseline, RBAC, stable REST API는 아직 구현되지 않았고,
+> Production mode는 의도적으로 fail-closed 처리됩니다.
 
 ## 주요 특징
 
 - Secret Version마다 독립된 DEK를 사용하는 AES-256-GCM Envelope Encryption
 - Tenant·Project·Environment·Secret·Version context를 묶는 versioned AAD
 - exact issuer·audience·algorithm 검증을 수행하는 OIDC Human Identity Boundary
+- CSPRNG opaque credential·constant-time verifier를 사용하는 Service Token
 - Secret value와 metadata operation의 명시적 분리
 - 모든 resource operation에 적용할 deny-by-default Authorization 설계
 - state change와 atomic하게 기록할 append-only Audit Log 설계
@@ -36,8 +37,8 @@ Security Boundary로 제공합니다.
 | Repository·CI foundation | 완료 | race test, `govulncheck`, Gitleaks 포함 |
 | Envelope Encryption | 완료 | Production `KekProvider`는 미선정 |
 | Human OIDC Identity | 완료 | remote JWKS·HTTP wiring은 후속 작업 |
-| Service Token | 다음 Slice | opaque token과 one-time reveal 예정 |
-| RBAC | 예정 | 정확한 role matrix는 별도 승인 필요 |
+| Service Token | 완료 | one-time reveal, expiry, revocation, exact Tenant scope |
+| RBAC | 다음 Slice | 정확한 role matrix는 별도 승인 필요 |
 | PostgreSQL·REST API | 미착수 | Migration·public contract 승인 필요 |
 
 <!-- markdownlint-enable MD013 -->
@@ -134,6 +135,7 @@ curl -i http://127.0.0.1:8080/readyz
 | `internal/config` | fail-closed runtime configuration |
 | `internal/encryption` | Envelope Encryption과 `KekProvider` port |
 | `internal/identity` | OIDC Human Identity Boundary |
+| `internal/servicetoken` | opaque Service Token 발급·인증 boundary |
 | `internal/health` | readiness lifecycle |
 | `internal/httpserver` | HTTP server와 operational probe |
 | `docs/adr` | 승인된 Architecture Decision Record |
@@ -154,6 +156,7 @@ curl -i http://127.0.0.1:8080/readyz
 | [Threat Model](docs/security/threat-model.md) | 보호 자산, trust boundary, 위협과 통제 |
 | [Encryption Boundary](docs/security/encryption-boundary.md) | Envelope format, AAD, `KekProvider` 계약 |
 | [Human Identity Boundary](docs/security/human-identity-boundary.md) | OIDC trust와 token validation 계약 |
+| [Service Token Boundary](docs/security/service-token-boundary.md) | opaque credential, verifier, lifecycle 계약 |
 | [Domain Contract](docs/domain/domain-contract.md) | Entity, lifecycle, storage invariant |
 | [ADR-0001](docs/adr/0001-api-first-modular-monolith.md) | API-first Modular Monolith 결정 |
 | [ADR-0002](docs/adr/0002-go-postgresql-backend.md) | Go·PostgreSQL backend 결정 |

@@ -41,6 +41,26 @@ raw token이나 claim value를 포함하지 않습니다.
 Authentication wiring, session, Database principal mapping은 아직 없습니다.
 Production startup은 계속 차단됩니다.
 
+## Service Token Boundary
+
+`internal/servicetoken`은 Workload용 opaque credential을 발급하고 exact Tenant
+scope·authoritative lifecycle state에 대해 인증합니다. 매 발급마다
+`crypto/rand.Reader`로 128-bit public ID와 256-bit secret을 생성합니다.
+Persistent `Record`에는 plaintext credential 대신 domain-separated SHA-256
+verifier만 남기며 candidate는 constant-time으로 비교합니다.
+
+Unit Test는 fresh entropy, canonical format, one-time reveal boundary,
+wrong-secret·wrong-tenant·expiry·revocation 거부, immutable last-used metadata,
+formatting redaction, sanitized failure를 검증합니다. Deterministic entropy는
+`_test.go`에서만 주입할 수 있습니다.
+
+전체 계약과 보류된 storage·concurrency 요구 사항은
+[Service Token Boundary](security/service-token-boundary.md)에 정의되어
+있습니다. Database persistence, HTTP Authentication, Audit transaction,
+Permission·RBAC는 아직 연결되지 않았습니다. Service Principal은 Tenant
+scope만 증명하며 어떤 resource action도 허용하지 않습니다. Production
+startup은 계속 차단됩니다.
+
 ## Local 실행
 
 Laf Secrets는 명시적인 runtime mode를 요구합니다. Development mode의 기본

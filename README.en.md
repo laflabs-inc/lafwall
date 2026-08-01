@@ -14,14 +14,15 @@ authorization, immutable version history, and auditability form one consistent
 security boundary.
 
 > **Development status:** This project is in early development and is not
-> ready for production. The database baseline, service tokens, RBAC, and stable
-> REST API are not implemented. Production mode intentionally fails closed.
+> ready for production. The database baseline, RBAC, and stable REST API are
+> not implemented. Production mode intentionally fails closed.
 
 ## Highlights
 
 - AES-256-GCM envelope encryption with an independent DEK per secret version
 - Versioned AAD binding tenant, project, environment, secret, and version context
 - OIDC human identity boundary with exact issuer, audience, and algorithm checks
+- Service tokens using CSPRNG opaque credentials and constant-time verifiers
 - Explicit separation between secret-value and metadata operations
 - Deny-by-default authorization for every resource operation
 - Append-only audit-log design committed atomically with state changes
@@ -36,8 +37,8 @@ security boundary.
 | Repository and CI foundation | Complete | Includes race tests, `govulncheck`, and Gitleaks |
 | Envelope encryption | Complete | Production `KekProvider` is not selected |
 | Human OIDC identity | Complete | Remote JWKS and HTTP wiring are deferred |
-| Service tokens | Next slice | Opaque tokens with one-time plaintext reveal |
-| RBAC | Planned | The exact role matrix requires separate approval |
+| Service tokens | Complete | One-time reveal, expiry, revocation, exact tenant scope |
+| RBAC | Next slice | The exact role matrix requires separate approval |
 | PostgreSQL and REST API | Not started | Migration and public-contract approval required |
 
 <!-- markdownlint-enable MD013 -->
@@ -135,6 +136,7 @@ Unknown `LAFSECRETS_*` variables, duplicate values, malformed input, and port
 | `internal/config` | Fail-closed runtime configuration |
 | `internal/encryption` | Envelope encryption and the `KekProvider` port |
 | `internal/identity` | OIDC human identity boundary |
+| `internal/servicetoken` | Opaque service-token issuance and authentication |
 | `internal/health` | Readiness lifecycle |
 | `internal/httpserver` | HTTP server and operational probes |
 | `docs/adr` | Accepted architecture decision records |
@@ -158,6 +160,7 @@ identifiers and standards terms remain in English.
 | [Threat model](docs/security/threat-model.md) | Assets, trust boundaries, threats, and controls |
 | [Encryption boundary](docs/security/encryption-boundary.md) | Envelope format, AAD, and `KekProvider` contract |
 | [Human identity boundary](docs/security/human-identity-boundary.md) | OIDC trust and token-validation contract |
+| [Service token boundary](docs/security/service-token-boundary.md) | Opaque credential, verifier, and lifecycle contract |
 | [Domain contract](docs/domain/domain-contract.md) | Entities, lifecycle, and storage invariants |
 | [ADR-0001](docs/adr/0001-api-first-modular-monolith.md) | API-first modular-monolith decision |
 | [ADR-0002](docs/adr/0002-go-postgresql-backend.md) | Go and PostgreSQL backend decision |
