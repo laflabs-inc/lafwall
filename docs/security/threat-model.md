@@ -1,126 +1,126 @@
 # Threat Model
 
-Status: **Accepted baseline**
+상태: **Accepted Baseline(승인된 기준선)**
 
-Accepted: 2026-07-30
+승인일: 2026-07-30
 
-This is a living security baseline. It must be reviewed when a trust boundary,
-protected asset, production provider, public API, or deployment model changes.
+이 문서는 지속적으로 갱신하는 Security Baseline입니다. Trust boundary,
+보호 자산, Production provider, Public API, deployment model이 변경되면 반드시
+Review해야 합니다.
 
-## Scope
+## 범위
 
-This model covers the Laf Secrets MVP control plane, REST API, persistent
-storage, key-encryption provider boundary, CLI, dashboard, human OIDC
-authentication, service tokens, RBAC, and audit events.
+이 Model은 Laf Secrets MVP의 Control Plane, REST API, persistent storage,
+Key Encryption Provider Boundary, CLI, Dashboard, Human OIDC Authentication,
+Service Token, RBAC, Audit Event를 다룹니다.
 
-Dynamic credentials, credential rotation, PKI, SSH certificates, Kubernetes
-Operator behavior, multi-region replication, and HSM integration are outside
-the MVP model.
+Dynamic Credential, Credential Rotation, PKI, SSH Certificate, Kubernetes
+Operator 동작, Multi-region Replication, HSM Integration은 MVP Model 범위
+밖입니다.
 
-## Protected assets
+## 보호 자산
 
-- Secret plaintext and historical values
-- Data-encryption keys and production key-encryption authority
-- Human sessions, OIDC tokens, and service tokens
-- Tenant, project, environment, membership, and RBAC state
-- Audit records and security-relevant metadata
-- Ciphertext, wrapped DEKs, backups, and configuration
-- Availability and integrity of the secret access path
+- Secret plaintext·historical value
+- Data Encryption Key·Production Key Encryption authority
+- Human session, OIDC Token, Service Token
+- Tenant, Project, Environment, membership, RBAC state
+- Audit Record·Security-relevant metadata
+- Ciphertext, Wrapped DEK, backup, configuration
+- Secret access path의 availability·integrity
 
-Ciphertext and wrapped keys remain sensitive even though they are not
-plaintext.
+Ciphertext·Wrapped Key도 plaintext가 아니더라도 민감정보로 취급합니다.
 
-## Actors
+## Actor
 
-- Authorized human user
-- Authorized workload using a service token
-- Tenant administrator
-- Laf Secrets operator
-- Compromised or malicious tenant member
-- External unauthenticated attacker
-- Attacker with read access to the application database or backups
-- Attacker controlling a network, proxy, log sink, or observability system
-- Compromised application process
-- Compromised or unavailable key provider
+- 승인된 Human User
+- Service Token을 사용하는 승인된 Workload
+- Tenant Administrator
+- Laf Secrets Operator
+- 침해되었거나 악의적인 Tenant Member
+- 외부 unauthenticated attacker
+- Application Database·backup에 read access를 얻은 attacker
+- Network, proxy, log sink, observability system을 제어하는 attacker
+- 침해된 Application Process
+- 침해되었거나 사용할 수 없는 Key Provider
 
-## Trust boundaries
+## Trust Boundary
 
-1. User or workload to the Laf Secrets API
-2. Dashboard or CLI to the public REST contract
-3. Transport adapters to application use cases
-4. Application use cases to authorization policy
-5. Application to PostgreSQL
-6. Encryption service to the external `KekProvider`
-7. Application to OIDC issuer and JWK retrieval
-8. Application to audit and observability destinations
-9. Backup and restore path
+1. User·Workload와 Laf Secrets API 사이
+2. Dashboard·CLI와 Public REST Contract 사이
+3. Transport Adapter와 Application Use Case 사이
+4. Application Use Case와 Authorization Policy 사이
+5. Application과 PostgreSQL 사이
+6. Encryption Service와 외부 `KekProvider` 사이
+7. Application과 OIDC issuer·JWK retrieval 사이
+8. Application과 Audit·observability destination 사이
+9. Backup·restore path
 
-Crossing a boundary requires explicit authentication, validation, and a
-failure policy. Internal network location is not proof of trust.
+Boundary를 넘을 때마다 명시적인 Authentication, validation, failure policy가
+필요합니다. Internal network에 있다는 사실은 trust의 증거가 아닙니다.
 
-## Primary threats and required controls
+## 주요 위협과 필수 통제
 
 <!-- markdownlint-disable MD013 -->
 
-| Threat | Example | Required control |
+| 위협 | 예시 | 필수 통제 |
 | --- | --- | --- |
-| Credential theft | Service token appears in source or logs | One-time display, non-reversible verifier, safe prefix, allowlisted logging, expiry and revocation |
-| Broken object authorization | A valid user changes a project ID to access another tenant | Deny-by-default use-case authorization, tenant-scoped queries, negative integration tests |
-| Ciphertext substitution | A database attacker moves ciphertext to a different secret or version | Canonical AAD bound to stable resource and version IDs |
-| Nonce or key reuse | Encryption repeats a GCM key/nonce pair | Fresh DEK per version and CSPRNG nonce generation |
-| Database disclosure | Attacker reads the primary database or backup | Envelope encryption, KEK outside database, encrypted backups, no plaintext persistence |
-| Log or telemetry disclosure | Request body, header, or error captures a secret | Allowlisted fields, body capture disabled, secret-safe errors, regression tests |
-| Privilege escalation | A project editor grants themselves secret access | Separate permissions for membership, policy, metadata, and plaintext access; tested permission matrix |
-| Audit tampering | An operator removes evidence of access | Append-only runtime role, atomic event writes, restricted retention path, later external export boundary |
-| Replay or stale authorization | A revoked token continues to work | Opaque token lookup on use, revocation state, expiry, cache limits |
-| OIDC confusion | Token from another issuer or audience is accepted | Exact issuer and audience checks, algorithm allowlist, immutable issuer/subject mapping |
-| Resource exhaustion | Oversized secret values or unbounded list requests | Explicit size, rate, pagination, and concurrency limits |
-| Key-provider outage | KMS becomes unavailable during a write or reveal | Bounded retries, readiness degradation, fail closed, no plaintext fallback |
-| Rollback attack | Older database state silently becomes current | Immutable versions, monotonic sequencing, audit correlation, restore procedures |
-| Supply-chain compromise | Dependency or build pipeline injects malicious code | Locked dependencies, review, provenance, dependency audit, minimal build permissions |
-| Browser persistence | Dashboard or proxy caches revealed plaintext | Explicit reveal flow, no-store headers, no persistent client state, capture-disabled telemetry |
-| CLI leakage | Secret appears in shell history or process list | stdin/file-descriptor input, masked prompt, no value in argv, safe debug mode |
+| Credential theft | Service Token이 source·log에 노출됨 | One-time display, non-reversible verifier, safe prefix, allowlisted logging, expiry·revocation |
+| Broken object authorization | 유효한 User가 Project ID를 바꿔 다른 Tenant에 접근함 | Deny-by-default Use Case Authorization, Tenant-scoped query, negative integration test |
+| Ciphertext substitution | Database attacker가 Ciphertext를 다른 Secret·Version으로 옮김 | Stable resource·Version ID에 묶인 canonical AAD |
+| Nonce·key reuse | Encryption이 GCM key/nonce pair를 재사용함 | Version별 fresh DEK와 CSPRNG nonce generation |
+| Database disclosure | Attacker가 primary Database·backup을 읽음 | Envelope Encryption, Database 외부 KEK, encrypted backup, plaintext persistence 금지 |
+| Log·telemetry disclosure | Request body·header·error가 Secret을 capture함 | Allowlisted field, body capture 비활성화, Secret-safe error, regression test |
+| Privilege escalation | Project editor가 자신에게 Secret access를 부여함 | Membership, Policy, metadata, plaintext access Permission 분리와 검증된 matrix |
+| Audit tampering | Operator가 access 증거를 제거함 | Append-only runtime role, atomic event write, 제한된 retention path, 향후 external export boundary |
+| Replay·stale authorization | Revoked Token이 계속 동작함 | 사용 시 opaque token lookup, revocation state, expiry, cache limit |
+| OIDC confusion | 다른 issuer·audience의 Token을 수락함 | Exact issuer·audience 검사, algorithm allowlist, immutable issuer/subject mapping |
+| Resource exhaustion | 지나치게 큰 Secret value·무제한 list request | 명시적인 size, rate, pagination, concurrency limit |
+| Key-provider outage | Write·reveal 중 KMS를 사용할 수 없음 | Bounded retry, readiness degradation, fail-closed, plaintext fallback 금지 |
+| Rollback attack | 과거 Database state가 현재 상태로 바뀜 | Immutable Version, monotonic sequencing, Audit correlation, restore procedure |
+| Supply-chain compromise | Dependency·build pipeline이 악성 코드를 주입함 | Locked dependency, Review, provenance, dependency audit, 최소 build permission |
+| Browser persistence | Dashboard·proxy가 reveal된 plaintext를 cache함 | 명시적 reveal flow, no-store header, persistent client state 금지, telemetry capture 비활성화 |
+| CLI leakage | Secret이 shell history·process list에 노출됨 | stdin·file descriptor input, masked prompt, argv에 value 금지, 안전한 debug mode |
 
 <!-- markdownlint-enable MD013 -->
 
-## Critical abuse cases to test
+## 반드시 검증할 Abuse Case
 
-1. A principal from tenant A attempts every operation against tenant B IDs.
-2. Ciphertext, wrapped DEK, nonce, or AAD from one version is substituted into
-   another.
-3. A revoked or expired service token is replayed.
-4. An authenticated project administrator lacks plaintext-access permission.
-5. Database and key-provider operations fail independently during a mutation.
-6. Audit persistence fails during secret access or policy modification.
-7. Concurrent writers attempt to create the same next secret version.
-8. Logs, traces, errors, fixtures, snapshots, and audit exports are scanned for
-   known canary secret values.
-9. Backup restore occurs with missing, wrong, and rotated KEK references.
-10. A dashboard or CLI error occurs after plaintext has been received.
+1. Tenant A의 Principal이 Tenant B ID에 모든 operation을 시도합니다.
+2. 한 Version의 Ciphertext, Wrapped DEK, nonce, AAD를 다른 Version으로
+   대체합니다.
+3. Revoked·expired Service Token을 replay합니다.
+4. 인증된 Project Administrator에게 plaintext access Permission이 없습니다.
+5. Mutation 중 Database와 Key Provider operation이 각각 실패합니다.
+6. Secret access·Policy 수정 중 Audit persistence가 실패합니다.
+7. 여러 Writer가 동일한 다음 Secret Version을 동시에 생성합니다.
+8. Log, trace, error, fixture, snapshot, Audit export에서 알려진 canary Secret
+   value를 검사합니다.
+9. KEK reference가 없거나 잘못되었거나 rotate된 상태로 backup을 restore합니다.
+10. Dashboard·CLI가 plaintext를 받은 뒤 error를 발생시킵니다.
 
-## Assumptions
+## 가정
 
-- TLS is terminated only by approved infrastructure and plaintext is not
-  captured at the edge.
-- Production key-provider identity and permissions are configured outside the
-  application database.
-- Host, container, and deployment hardening are separate operator
-  responsibilities documented before production release.
-- Full application-process compromise may expose plaintext being actively
-  processed. The MVP reduces exposure but does not claim confidential
-  computing.
+- TLS는 승인된 Infrastructure에서만 terminate하며 edge에서 plaintext를
+  capture하지 않습니다.
+- Production Key Provider Identity·Permission은 Application Database 외부에서
+  설정합니다.
+- Host, container, deployment hardening은 Production release 전에 문서화할
+  별도의 Operator 책임입니다.
+- Application Process 전체가 침해되면 처리 중인 plaintext가 노출될 수
+  있습니다. MVP는 노출을 줄이지만 Confidential Computing을 제공한다고
+  주장하지 않습니다.
 
-## Residual risks
+## 잔여 위험
 
-- A compromised running application with valid key-provider authority can
-  decrypt data that its runtime identity is allowed to access.
-- Application-level append-only audit controls do not protect against every
-  privileged database or infrastructure administrator. External immutable
-  export is a future hardening boundary.
-- Soft deletion preserves recoverability but does not provide immediate
-  cryptographic erasure.
-- Metadata such as project names, secret names, access timing, and ciphertext
-  sizes may reveal operational information and must be access-controlled.
+- 유효한 Key Provider authority를 가진 실행 중 Application이 침해되면 해당
+  runtime identity가 access할 수 있는 data를 decrypt할 수 있습니다.
+- Application-level append-only Audit control만으로 모든 privileged
+  Database·Infrastructure Administrator를 방어할 수 없습니다. External
+  immutable export는 향후 hardening boundary입니다.
+- Soft deletion은 recovery를 제공하지만 즉각적인 cryptographic erasure는
+  제공하지 않습니다.
+- Project name, Secret name, access timing, Ciphertext size 같은 metadata가
+  운영 정보를 노출할 수 있으므로 access control이 필요합니다.
 
-These risks must be reflected in operator documentation and must not be hidden
-by stronger product claims.
+이 위험을 Operator documentation에 반영해야 하며 더 강한 Product claim으로
+숨겨서는 안 됩니다.

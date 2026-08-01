@@ -1,121 +1,122 @@
-# Development
+# 개발 가이드
 
-## Supported toolchain
+## 지원 Toolchain
 
 - Go 1.26.5
-- GNU Make or a compatible `make`
-- Git for history-aware secret scanning
+- GNU Make 또는 호환되는 `make`
+- history-aware Secret scan을 위한 Git
 
-The service uses the Go standard library plus pinned `go-oidc` and `go-jose`
-dependencies for the human identity boundary. Security tools are invoked at
-pinned versions through `go run`, so they do not become runtime dependencies.
+Service는 Go standard library와 Human Identity Boundary에 필요한 고정 버전의
+`go-oidc`, `go-jose` dependency를 사용합니다. Security tool은 runtime
+dependency가 되지 않도록 고정 버전을 `go run`으로 실행합니다.
 
-## Encryption boundary
+## Encryption Boundary
 
-`internal/encryption` implements the versioned AES-256-GCM Envelope and the
-`KekProvider` port. The package uses only Go standard-library cryptography and
-does not log, persist, authorize, or expose plaintext through HTTP.
+`internal/encryption`은 versioned AES-256-GCM Envelope과 `KekProvider` port를
+구현합니다. 이 package는 Go standard library의 cryptography만 사용하며
+plaintext를 log·persist·authorize하거나 HTTP로 노출하지 않습니다.
 
-The canonical AAD and provider contracts are documented in the
-[Encryption Boundary](security/encryption-boundary.md). The deterministic
-provider is declared only in `_test.go`; Application builds cannot select it.
-There is no Production provider, Database adapter, or runtime wiring yet.
+Canonical AAD와 provider 계약은
+[Encryption Boundary](security/encryption-boundary.md)에 정의되어 있습니다.
+Deterministic provider는 `_test.go`에만 선언되므로 Application build에서
+선택할 수 없습니다. Production provider, Database adapter, runtime wiring은
+아직 존재하지 않습니다.
 
-## Human identity boundary
+## Human Identity Boundary
 
-`internal/identity` verifies signed OIDC ID tokens from one explicitly
-configured HTTPS issuer and maps immutable `(issuer, subject)` claims to an
-internal human principal. It requires an exact single audience and explicit
-asymmetric signing-algorithm allowlist. Email and other profile claims are not
-identity proof.
+`internal/identity`는 명시적으로 설정된 하나의 HTTPS issuer가 서명한 OIDC
+ID Token을 검증하고 immutable `(issuer, subject)` claim을 내부 Human
+Principal에 mapping합니다. 정확히 하나의 audience와 명시적인 asymmetric
+signing algorithm allowlist를 요구합니다. Email과 기타 profile claim은
+identity proof가 아닙니다.
 
-Signature, issuer, audience, authorized-party, expiry, issued-at, not-before,
-duplicate-claim, subject, size, and nonce rejection are covered by race-enabled
-unit tests. All authentication failures are sanitized and do not include raw
-tokens or claim values.
+Race detector가 활성화된 unit test는 signature, issuer, audience,
+authorized party, expiry, issued-at, not-before, duplicate claim, subject,
+size, nonce 거부를 검증합니다. 모든 Authentication failure는 sanitize되며
+raw token이나 claim value를 포함하지 않습니다.
 
-The full contract and deferred provider requirements are documented in the
-[Human Identity Boundary](security/human-identity-boundary.md). No remote JWKS
-adapter, Laf ID Production configuration, HTTP authentication wiring, session,
-or Database principal mapping exists yet. Production startup remains blocked.
+전체 계약과 보류된 provider 요구 사항은
+[Human Identity Boundary](security/human-identity-boundary.md)에 정의되어
+있습니다. Remote JWKS adapter, Laf ID Production configuration, HTTP
+Authentication wiring, session, Database principal mapping은 아직 없습니다.
+Production startup은 계속 차단됩니다.
 
-## Local startup
+## Local 실행
 
-Laf Secrets requires an explicit runtime mode. Development binds to loopback
-by default:
+Laf Secrets는 명시적인 runtime mode를 요구합니다. Development mode의 기본
+listen address는 loopback입니다.
 
 ```sh
 export LAFSECRETS_RUNTIME_MODE=development
 make run
 ```
 
-`LAFSECRETS_HTTP_ADDRESS` may override `127.0.0.1:8080` with a valid
-`host:port` value.
+`LAFSECRETS_HTTP_ADDRESS`에 유효한 `host:port` 값을 지정하면 기본값
+`127.0.0.1:8080`을 변경할 수 있습니다.
 
-Unknown `LAFSECRETS_*` variables, malformed values, duplicate values, unknown
-runtime modes, and port `0` fail startup. Rejected configuration values are
-not copied into errors.
+알 수 없는 `LAFSECRETS_*` 변수, 잘못된 값, 중복 값, 알 수 없는 runtime
+mode, port `0`은 startup을 실패시킵니다. 거부된 configuration value는
+error에 복사하지 않습니다.
 
-Production mode is intentionally unavailable in this slice. Startup with
-`LAFSECRETS_RUNTIME_MODE=production` fails until the required storage,
-identity, audit, and production `KekProvider` dependencies exist and their
-separate approval gates are resolved. There is no bypass flag.
+Production mode는 현재 의도적으로 사용할 수 없습니다.
+`LAFSECRETS_RUNTIME_MODE=production`으로 시작하면 필요한 storage, identity,
+audit, Production `KekProvider` dependency가 존재하고 각 approval gate가
+해결될 때까지 실패합니다. 이를 우회하는 flag는 없습니다.
 
-## Quality commands
+## 품질 검사 명령
 
 <!-- markdownlint-disable MD013 -->
 
-| Command | Purpose |
+| 명령 | 목적 |
 | --- | --- |
-| `make format` | Format Go source. |
-| `make lint` | Check formatting and run `go vet` for normal and integration builds. |
-| `make test-unit` | Run unit tests with the race detector. |
-| `make test-integration` | Run integration-tagged tests with the race detector. |
-| `make audit` | Verify modules and run `govulncheck` against source and tests. |
-| `make scan-secrets` | Scan the current worktree with Gitleaks and redact findings. |
-| `make scan-secrets-history` | Scan all Git history available in the checkout. |
-| `make check` | Run lint, tests, dependency audit, and worktree secret scan. |
-| `make ci` | Run all checks, including the Git history scan. |
+| `make format` | Go source를 format합니다. |
+| `make lint` | Format을 검사하고 일반·integration build에 `go vet`을 실행합니다. |
+| `make test-unit` | Race detector를 활성화해 unit test를 실행합니다. |
+| `make test-integration` | Race detector를 활성화해 integration-tagged test를 실행합니다. |
+| `make audit` | Module을 검증하고 source·test에 `govulncheck`를 실행합니다. |
+| `make scan-secrets` | 현재 worktree를 Gitleaks로 검사하고 finding을 redact합니다. |
+| `make scan-secrets-history` | checkout에서 확인 가능한 전체 Git history를 검사합니다. |
+| `make check` | Lint, test, dependency audit, worktree Secret scan을 실행합니다. |
+| `make ci` | Git history scan을 포함한 모든 검사를 실행합니다. |
 
 <!-- markdownlint-enable MD013 -->
 
-`make scan-secrets-history` requires a real Git checkout. CI uses a full-depth
-checkout so the history scan is not silently partial. The command first runs
-the same full-history `git log` operation independently; this makes a Git
-failure visible instead of trusting a scanner success code after an aborted
-history read.
+`make scan-secrets-history`는 실제 Git checkout을 요구합니다. CI는 history
+scan이 일부만 실행된 채 성공하지 않도록 full-depth checkout을 사용합니다.
+또한 scanner가 중단된 history read를 성공으로 판단하는 상황을 막기 위해,
+같은 full-history `git log` operation을 먼저 독립적으로 실행합니다.
 
-## Operational probes
+## Operational Probe
 
-The server exposes unversioned operational probes. They are not part of the
-public REST product contract.
+Server는 version이 없는 operational probe를 제공합니다. 이 endpoint들은
+public REST product contract에 포함되지 않습니다.
 
 <!-- markdownlint-disable MD013 -->
 
-| Path | Healthy | Unhealthy | Body |
+| 경로 | 정상 | 비정상 | Body |
 | --- | --- | --- | --- |
-| `/livez` | `204 No Content` | Not applicable while the HTTP process responds | Empty |
-| `/readyz` | `204 No Content` | `503 Service Unavailable` | Empty |
+| `/livez` | `204 No Content` | HTTP process가 응답하는 동안 해당 없음 | 비어 있음 |
+| `/readyz` | `204 No Content` | `503 Service Unavailable` | 비어 있음 |
 
 <!-- markdownlint-enable MD013 -->
 
-Both probes support `GET` and `HEAD`, set `Cache-Control: no-store`, and expose
-no dependency names, configuration, build metadata, or sensitive state.
-Readiness starts false, becomes true only after the listener is established,
-and returns to false before graceful shutdown.
+두 probe는 `GET`과 `HEAD`를 지원하고 `Cache-Control: no-store`를 설정합니다.
+Dependency 이름, configuration, build metadata, 민감한 상태는 노출하지
+않습니다. Readiness는 false로 시작하고 listener가 준비된 뒤에만 true가
+되며 graceful shutdown 전에 다시 false가 됩니다.
 
-The service has no storage or Production key-provider adapter. Production
-remains blocked so readiness cannot falsely claim Production capability.
-Later required dependencies must participate in readiness before Production
-startup can be enabled.
+Service에는 아직 storage나 Production key-provider adapter가 없습니다.
+따라서 readiness가 Production capability를 잘못 표시하지 않도록 Production
+startup은 차단된 상태입니다. 이후 추가되는 필수 dependency는 Production
+startup을 허용하기 전에 readiness에 포함해야 합니다.
 
-## CI security boundary
+## CI Security Boundary
 
-The GitHub Actions workflow:
+GitHub Actions workflow는 다음 조건을 지킵니다.
 
-- uses read-only repository permissions;
-- does not use `pull_request_target`;
-- does not persist checkout credentials;
-- pins actions to full commit SHAs;
-- applies a job timeout; and
-- runs the same `make ci` command available to developers.
+- Repository permission을 read-only로 제한합니다.
+- `pull_request_target`을 사용하지 않습니다.
+- Checkout credential을 저장하지 않습니다.
+- Action을 full commit SHA로 고정합니다.
+- Job timeout을 설정합니다.
+- 개발자가 실행할 수 있는 것과 동일한 `make ci` 명령을 실행합니다.
